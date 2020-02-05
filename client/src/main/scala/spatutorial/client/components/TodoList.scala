@@ -2,9 +2,10 @@ package spatutorial.client.components
 
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
-import spatutorial.client.components.Bootstrap.{CommonStyle, Button}
 import spatutorial.shared._
 import scalacss.ScalaCssReact._
+import spatutorial.client.components.BootstrapStyles.CommonStyle
+import spatutorial.client.components.ReactBootstrap.Button
 
 object TodoList {
   // shorthand for styles
@@ -31,8 +32,8 @@ object TodoList {
           <.input.checkbox(^.checked := item.completed, ^.onChange --> p.stateChange(item.copy(completed = !item.completed))),
           <.span(" "),
           if (item.completed) <.s(item.content) else <.span(item.content),
-          Button(Button.Props(p.editItem(item), addStyles = Seq(bss.pullRight, bss.buttonXS)), "Edit"),
-          Button(Button.Props(p.deleteItem(item), addStyles = Seq(bss.pullRight, bss.buttonXS)), "Delete")
+          Button(onClick = p.editItem(item).toScalaFn)(^.className := "pull-right btn-xs", "Edit"),
+          Button(onClick = p.deleteItem(item).toScalaFn)(^.className := "pull-right btn-xs", "Delete")
         )
       }
       <.ul(style.listGroup)(p.items toTagMod renderItem)

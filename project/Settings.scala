@@ -40,6 +40,7 @@ object Settings {
     val scalaCSS = "0.5.3"
     val scalaDom = "0.9.6"
     val scalajsReact = "1.4.2"
+    val scalsjsReactBridge = "0.8.1"
     val scalajsScripts = "1.1.4"
     val uTest = "0.4.7"
     val webpackMerge = "4.1.2"
@@ -71,6 +72,7 @@ object Settings {
     "io.suzaku" %%% "diode" % versions.diode,
     "io.suzaku" %%% "diode-react" % versions.diodeReact,
     "org.scala-js" %%% "scalajs-dom" % versions.scalaDom,
+    "com.payalabs" %%% "scalajs-react-bridge" % versions.scalsjsReactBridge,
     "com.lihaoyi" %%% "utest" % versions.uTest % Test
   ))
 
@@ -85,7 +87,6 @@ object Settings {
     "react-dom" -> versions.react,
     "react-bootstrap" -> versions.reactBootstrap,
     "jquery" -> versions.jQuery,
-    "bootstrap" -> versions.bootstrap,
     "chart.js" -> versions.chartjs,
     "log4javascript" -> versions.log4js,
   ))

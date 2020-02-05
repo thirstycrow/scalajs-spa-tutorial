@@ -1,17 +1,24 @@
 package spatutorial.client.components
 
 import japgolly.univeq.UnivEq
-import spatutorial.client.components.Bootstrap.CommonStyle
-
-import spatutorial.client.CssSettings._
 import scalacss.internal.mutable
-import spatutorial.client.components.Bootstrap.CommonStyle._
+import spatutorial.client.CssSettings._
+
+object BootstrapStyles {
+  type CommonStyle = CommonStyle.Value
+
+  object CommonStyle extends Enumeration {
+    val default, primary, success, info, warning, danger = Value
+  }
+}
 
 class BootstrapStyles(implicit r: mutable.Register) extends StyleSheet.Inline()(r) {
 
+  import BootstrapStyles._
+  import CommonStyle._
   import dsl._
 
-  implicit val styleUnivEq: UnivEq[CommonStyle.Value] = new UnivEq[CommonStyle.Value] {}
+  implicit val styleUnivEq: UnivEq[CommonStyle] = new UnivEq[CommonStyle] {}
 
   val csDomain = Domain.ofValues(default, primary, success, info, warning, danger)
 

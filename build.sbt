@@ -12,10 +12,6 @@ lazy val shared = crossProject(JSPlatform, JVMPlatform)
   // set up settings specific to the JS project
   .jsConfigure(_ enablePlugins ScalaJSWeb)
 
-lazy val sharedJVM = shared.jvm.settings(name := "sharedJVM")
-
-lazy val sharedJS = shared.js.settings(name := "sharedJS")
-
 // use eliding to drop some debug code in the production build
 lazy val elideOptions = settingKey[Seq[String]]("Set limit for elidable functions")
 
@@ -41,7 +37,7 @@ lazy val client: Project = (project in file("client"))
     testFrameworks += new TestFramework("utest.runner.Framework")
   )
   .enablePlugins(ScalaJSPlugin, ScalaJSWeb, ScalaJSBundlerPlugin)
-  .dependsOn(sharedJS)
+  .dependsOn(shared.js)
 
 // Client projects (just one in this case)
 lazy val clients = Seq(client)
@@ -67,7 +63,7 @@ lazy val server = (project in file("server"))
   .enablePlugins(PlayScala, WebScalaJSBundlerPlugin)
   .disablePlugins(PlayLayoutPlugin) // use the standard directory layout instead of Play's custom
   .aggregate(clients.map(projectToRef): _*)
-  .dependsOn(sharedJVM)
+  .dependsOn(shared.jvm)
 
 // Command for building a release
 lazy val ReleaseCmd = Command.command("release") {

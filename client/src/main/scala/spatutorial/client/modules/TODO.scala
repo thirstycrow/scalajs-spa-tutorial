@@ -1,17 +1,15 @@
 package spatutorial.client.modules
 
+import diode.data.Pot
 import diode.react.ReactPot._
 import diode.react._
-import diode.data.Pot
 import japgolly.scalajs.react._
 import japgolly.scalajs.react.vdom.html_<^._
-import spatutorial.client.components.Bootstrap._
+import spatutorial.client.components.ReactBootstrap._
 import spatutorial.client.components._
 import spatutorial.client.logger._
 import spatutorial.client.services._
 import spatutorial.shared._
-
-import scalacss.ScalaCssReact._
 
 object Todo {
 
@@ -21,36 +19,44 @@ object Todo {
 
   class Backend($: BackendScope[Props, State]) {
     def mounted(props: Props) =
-      // dispatch a message to refresh the todos, which will cause TodoStore to fetch todos from the server
+    // dispatch a message to refresh the todos, which will cause TodoStore to fetch todos from the server
       Callback.when(props.proxy().isEmpty)(props.proxy.dispatchCB(RefreshTodos))
 
-    def editTodo(item: Option[TodoItem]) =
+    def hideTodoEditor =
+      $.modState(s => s.copy(showTodoForm = false))
+
+    def editTodo(item: Option[TodoItem]) = {
       // activate the edit dialog
       $.modState(s => s.copy(selectedItem = item, showTodoForm = true))
-
-    def todoEdited(item: TodoItem, cancelled: Boolean) = {
-      val cb = if (cancelled) {
-        // nothing to do here
-        Callback.log("Todo editing cancelled")
-      } else {
-        Callback.log(s"Todo edited: $item") >>
-          $.props >>= (_.proxy.dispatchCB(UpdateTodo(item)))
-      }
-      // hide the edit dialog, chain callbacks
-      cb >> $.modState(s => s.copy(showTodoForm = false))
     }
 
-    def render(p: Props, s: State) =
-      Panel(Panel.Props("What needs to be done"), <.div(
+    def editCancelled = {
+      Callback.log("Todo editing cancelled") >> hideTodoEditor
+    }
+
+    def editSubmitted(item: TodoItem) = {
+      Callback.log(s"Todo edited: $item") >>
+        ($.props >>= (_.proxy.dispatchCB(UpdateTodo(item)))) >>
+        hideTodoEditor
+    }
+
+    def render(p: Props, s: State) = {
+      Panel()(
+        PanelHeading()("What needs to be done"),
+        PanelBody()(
         p.proxy().renderFailed(ex => "Error loading"),
         p.proxy().renderPending(_ > 500, _ => "Loading..."),
         p.proxy().render(todos => TodoList(todos.items, item => p.proxy.dispatchCB(UpdateTodo(item)),
           item => editTodo(Some(item)), item => p.proxy.dispatchCB(DeleteTodo(item)))),
-        Button(Button.Props(editTodo(None)), Icon.plusSquare, " New")),
+          Button(onClick = editTodo(None).toScalaFn)(Icon.plusSquare, " New")
+        ),
         // if the dialog is open, add it to the panel
-        if (s.showTodoForm) TodoForm(TodoForm.Props(s.selectedItem, todoEdited))
+        if (s.showTodoForm)
+          TodoForm(TodoForm.Props(s.selectedItem, editSubmitted, editCancelled)): VdomNode
         else // otherwise add an empty placeholder
-          VdomArray.empty())
+          VdomArray.empty()
+      )
+    }
   }
 
   // create the React component for To Do management
@@ -68,19 +74,11 @@ object TodoForm {
   // shorthand for styles
   @inline private def bss = GlobalStyles.bootstrapStyles
 
-  case class Props(item: Option[TodoItem], submitHandler: (TodoItem, Boolean) => Callback)
+  case class Props(item: Option[TodoItem], onSubmit: TodoItem => Callback, onCancel: Callback)
 
   case class State(item: TodoItem, cancelled: Boolean = true)
 
   class Backend(t: BackendScope[Props, State]) {
-    def submitForm(): Callback = {
-      // mark it as NOT cancelled (which is the default)
-      t.modState(s => s.copy(cancelled = false))
-    }
-
-    def formClosed(state: State, props: Props): Callback =
-      // call parent handler with the new item and whether form was OK or cancelled
-      props.submitHandler(state.item, state.cancelled)
 
     def updateDescription(e: ReactEventFromInput) = {
       val text = e.target.value
@@ -101,27 +99,24 @@ object TodoForm {
     def render(p: Props, s: State) = {
       log.debug(s"User is ${if (s.item.id == "") "adding" else "editing"} a todo or two")
       val headerText = if (s.item.id == "") "Add new todo" else "Edit todo"
-      Modal(Modal.Props(
-        // header contains a cancel button (X)
-        header = hide => <.span(<.button(^.tpe := "button", bss.close, ^.onClick --> hide, Icon.close), <.h4(headerText)),
-        // footer has the OK button that submits the form before hiding it
-        footer = hide => <.span(Button(Button.Props(submitForm() >> hide), "OK")),
-        // this is called after the modal has been hidden (animation is completed)
-        closed = formClosed(s, p)),
-        <.div(bss.formGroup,
-          <.label(^.`for` := "description", "Description"),
-          <.input.text(bss.formControl, ^.id := "description", ^.value := s.item.content,
-            ^.placeholder := "write description", ^.onChange ==> updateDescription)),
-        <.div(bss.formGroup,
-          <.label(^.`for` := "priority", "Priority"),
-          // using defaultValue = "Normal" instead of option/selected due to React
-          <.select(bss.formControl, ^.id := "priority", ^.value := s.item.priority.toString, ^.onChange ==> updatePriority,
-            <.option(^.value := TodoHigh.toString, "High"),
-            <.option(^.value := TodoNormal.toString, "Normal"),
-            <.option(^.value := TodoLow.toString, "Low")
-          )
-        )
-      )
+      Modal(show = true, backdropClassName = "fade")(
+        ModalHeader()(
+          <.span(
+            Button(tpe = "button", onClick = p.onCancel.toScalaFn)(^.className := "close", Icon.close),
+            <.h4(headerText))),
+        ModalBody()(
+          FormGroup(controlId = "description")(
+            ControlLabel()("Description"),
+            FormControl()(^.placeholder := "write description", ^.autoComplete := "off",
+              ^.value := s.item.content, ^.onChange ==> updateDescription)),
+          FormGroup(controlId = "priority")(
+            ControlLabel()("Priority"),
+            FormControl("select")(^.value := s.item.priority.toString, ^.onChange ==> updatePriority,
+              <.option(^.value := TodoHigh.toString, "High"),
+              <.option(^.value := TodoNormal.toString, "Normal"),
+              <.option(^.value := TodoLow.toString, "Low")))),
+        ModalFooter()(
+          Button(onClick = p.onSubmit(s.item).toScalaFn)("OK")))
     }
   }
 
