@@ -3,7 +3,8 @@ package spatutorial.client.components
 import org.scalajs.dom._
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSGlobal
+import scala.scalajs.js.annotation.JSImport.Namespace
+import scala.scalajs.js.annotation.{JSGlobal, JSImport}
 
 /**
   * Minimal facade for JQuery. Use https://github.com/scala-js/scala-js-jquery or
@@ -15,7 +16,7 @@ trait JQueryEventObject extends Event {
 }
 
 @js.native
-@JSGlobal("jQuery")
+@JSImport("jquery", Namespace)
 object JQueryStatic extends js.Object {
   def apply(element: Element): JQuery = js.native
 }

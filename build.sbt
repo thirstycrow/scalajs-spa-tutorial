@@ -1,8 +1,10 @@
 import sbt.Keys._
 import sbt.Project.projectToRef
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 // a special crossProject for configuring a JS/JVM/shared structure
-lazy val shared = (crossProject.crossType(CrossType.Pure) in file("shared"))
+lazy val shared = crossProject(JSPlatform, JVMPlatform)
+  .crossType(CrossType.Pure)
   .settings(
     scalaVersion := Settings.versions.scala,
     libraryDependencies ++= Settings.sharedDependencies.value
@@ -28,18 +30,17 @@ lazy val client: Project = (project in file("client"))
     // by default we do development build, no eliding
     elideOptions := Seq(),
     scalacOptions ++= elideOptions.value,
-    jsDependencies ++= Settings.jsDependencies.value,
-    // RuntimeDOM is needed for tests
-    jsDependencies += RuntimeDOM % "test",
-    // yes, we want to package JS dependencies
-    skip in packageJSDependencies := false,
+    npmDevDependencies in Compile ++= Settings.npmDevDependencies.value,
+    npmDependencies in Compile ++= Settings.npmDependencies.value,
+    webpackResources := baseDirectory.value / "webpacks" * "*",
+    webpackConfigFile in fastOptJS := Some(baseDirectory.value / "webpacks" / "dev.webpack.config.js"),
     // use Scala.js provided launcher code to start the client app
     scalaJSUseMainModuleInitializer := true,
     scalaJSUseMainModuleInitializer in Test := false,
     // use uTest framework for tests
     testFrameworks += new TestFramework("utest.runner.Framework")
   )
-  .enablePlugins(ScalaJSPlugin, ScalaJSWeb)
+  .enablePlugins(ScalaJSPlugin, ScalaJSWeb, ScalaJSBundlerPlugin)
   .dependsOn(sharedJS)
 
 // Client projects (just one in this case)
@@ -63,7 +64,7 @@ lazy val server = (project in file("server"))
     // compress CSS
     LessKeys.compress in Assets := true
   )
-  .enablePlugins(PlayScala)
+  .enablePlugins(PlayScala, WebScalaJSBundlerPlugin)
   .disablePlugins(PlayLayoutPlugin) // use the standard directory layout instead of Play's custom
   .aggregate(clients.map(projectToRef): _*)
   .dependsOn(sharedJVM)

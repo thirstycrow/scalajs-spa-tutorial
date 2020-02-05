@@ -1,11 +1,13 @@
 import sbt._
-import org.scalajs.sbtplugin.ScalaJSPlugin.autoImport._
+import org.portablescala.sbtplatformdeps.PlatformDepsPlugin.autoImport._
+import play.sbt.PlayImport
 
 /**
  * Application settings. Configure the build for your application here.
  * You normally don't have to touch the actual build definition after this.
  */
 object Settings {
+
   /** The name of your application */
   val name = "scalajs-spa"
 
@@ -22,22 +24,25 @@ object Settings {
 
   /** Declare global dependency versions here to avoid mismatches in multi part dependencies */
   object versions {
-    val scala = "2.11.11"
-    val scalaDom = "0.9.3"
-    val scalajsReact = "1.1.0"
-    val scalaCSS = "0.5.3"
-    val log4js = "1.4.10"
     val autowire = "0.2.6"
-    val booPickle = "1.2.6"
-    val diode = "1.1.2"
-    val uTest = "0.4.7"
-
-    val react = "15.6.1"
-    val jQuery = "1.11.1"
+    val booPickle = "1.3.0"
     val bootstrap = "3.3.6"
     val chartjs = "2.1.3"
-
-    val scalajsScripts = "1.0.0"
+    val diode = "1.1.6"
+    val diodeReact = "1.1.6.142"
+    val exposeLoader = "0.7.5"
+    val importsLoader = "0.8.0"
+    val jQuery = "1.11.1"
+    val log4js = "1.4.15"
+    val react = "16.7.0"
+    val reactBootstrap = "0.33.1"
+    val scala = "2.12.10"
+    val scalaCSS = "0.5.3"
+    val scalaDom = "0.9.6"
+    val scalajsReact = "1.4.2"
+    val scalajsScripts = "1.1.4"
+    val uTest = "0.4.7"
+    val webpackMerge = "4.1.2"
   }
 
   /**
@@ -51,6 +56,7 @@ object Settings {
 
   /** Dependencies only used by the JVM project */
   val jvmDependencies = Def.setting(Seq(
+    PlayImport.guice,
     "com.vmunier" %% "scalajs-scripts" % versions.scalajsScripts,
     "org.webjars" % "font-awesome" % "4.3.0-1" % Provided,
     "org.webjars" % "bootstrap" % versions.bootstrap % Provided,
@@ -63,18 +69,24 @@ object Settings {
     "com.github.japgolly.scalajs-react" %%% "extra" % versions.scalajsReact,
     "com.github.japgolly.scalacss" %%% "ext-react" % versions.scalaCSS,
     "io.suzaku" %%% "diode" % versions.diode,
-    "io.suzaku" %%% "diode-react" % versions.diode,
+    "io.suzaku" %%% "diode-react" % versions.diodeReact,
     "org.scala-js" %%% "scalajs-dom" % versions.scalaDom,
     "com.lihaoyi" %%% "utest" % versions.uTest % Test
   ))
 
-  /** Dependencies for external JS libs that are bundled into a single .js file according to dependency order */
-  val jsDependencies = Def.setting(Seq(
-    "org.webjars.bower" % "react" % versions.react / "react-with-addons.js" minified "react-with-addons.min.js" commonJSName "React",
-    "org.webjars.bower" % "react" % versions.react / "react-dom.js" minified "react-dom.min.js" dependsOn "react-with-addons.js" commonJSName "ReactDOM",
-    "org.webjars" % "jquery" % versions.jQuery / "jquery.js" minified "jquery.min.js",
-    "org.webjars" % "bootstrap" % versions.bootstrap / "bootstrap.js" minified "bootstrap.min.js" dependsOn "jquery.js",
-    "org.webjars" % "chartjs" % versions.chartjs / "Chart.js" minified "Chart.min.js",
-    "org.webjars" % "log4javascript" % versions.log4js / "js/log4javascript_uncompressed.js" minified "js/log4javascript.js"
+  val npmDevDependencies = Def.setting(Seq(
+    "webpack-merge" -> Settings.versions.webpackMerge,
+    "imports-loader" -> Settings.versions.importsLoader,
+    "expose-loader" -> Settings.versions.exposeLoader
+  ))
+
+  val npmDependencies = Def.setting(Seq(
+    "react" -> versions.react,
+    "react-dom" -> versions.react,
+    "react-bootstrap" -> versions.reactBootstrap,
+    "jquery" -> versions.jQuery,
+    "bootstrap" -> versions.bootstrap,
+    "chart.js" -> versions.chartjs,
+    "log4javascript" -> versions.log4js,
   ))
 }

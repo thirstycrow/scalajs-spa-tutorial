@@ -6,7 +6,8 @@ import org.scalajs.dom.raw.HTMLCanvasElement
 
 import scala.scalajs.js
 import scala.scalajs.js.JSConverters._
-import scala.scalajs.js.annotation.JSGlobal
+import scala.scalajs.js.annotation.JSImport
+import scala.scalajs.js.annotation.JSImport.Namespace
 
 @js.native
 trait ChartDataset extends js.Object {
@@ -75,7 +76,7 @@ object ChartConfiguration {
 
 // define a class to access the Chart.js component
 @js.native
-@JSGlobal("Chart")
+@JSImport("chart.js", Namespace)
 class JSChart(ctx: js.Dynamic, config: ChartConfiguration) extends js.Object
 
 object Chart {
@@ -95,7 +96,7 @@ object Chart {
     )
     .componentDidMount(scope => Callback {
       // access context of the canvas
-      val ctx = scope.getDOMNode.asInstanceOf[HTMLCanvasElement].getContext("2d")
+      val ctx = scope.getDOMNode.asElement().asInstanceOf[HTMLCanvasElement].getContext("2d")
       // create the actual chart using the 3rd party component
       scope.props.style match {
         case LineChart => new JSChart(ctx, ChartConfiguration("line", scope.props.data))

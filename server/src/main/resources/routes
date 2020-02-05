@@ -13,4 +13,4 @@ GET     /assets/*file                     controllers.Assets.versioned(path="/pu
 POST    /api/*path                        controllers.Application.autowireApi(path: String)
 
 # Logging
-POST /logging                             controllers.Application.logging
+POST    /logging                             controllers.Application.logging

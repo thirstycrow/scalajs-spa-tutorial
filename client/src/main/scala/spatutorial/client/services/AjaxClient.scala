@@ -15,7 +15,10 @@ object AjaxClient extends autowire.Client[ByteBuffer, Pickler, Pickler] {
       url = "/api/" + req.path.mkString("/"),
       data = Pickle.intoBytes(req.args),
       responseType = "arraybuffer",
-      headers = Map("Content-Type" -> "application/octet-stream")
+      headers = Map(
+        "Content-Type" -> "application/octet-stream",
+        "X-Requested-With" -> "XMLHttpRequest"
+      )
     ).map(r => TypedArrayBuffer.wrap(r.response.asInstanceOf[ArrayBuffer]))
   }
 

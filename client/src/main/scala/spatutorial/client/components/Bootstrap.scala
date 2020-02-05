@@ -8,10 +8,24 @@ import scala.scalajs.js
 import scalacss.ScalaCssReact._
 import spatutorial.client.CssSettings._
 
+import scala.scalajs.js.annotation.JSImport
+import scala.scalajs.js.annotation.JSImport.Namespace
+
 /**
  * Common Bootstrap components for scalajs-react
  */
 object Bootstrap {
+
+  private object BootstrapLib {
+    @js.native
+    @JSImport("bootstrap", Namespace)
+    object BootstrapModule extends js.Object
+
+    private lazy val dummy = BootstrapModule
+
+    def load() = dummy
+  }
+  BootstrapLib.load()
 
   // shorthand for styles
   @inline private def bss = GlobalStyles.bootstrapStyles
@@ -67,7 +81,7 @@ object Bootstrap {
     class Backend(t: BackendScope[Props, Unit]) {
       def hide =
         // instruct Bootstrap to hide the modal
-        t.getDOMNode.map(jQuery(_).modal("hide")).void
+        t.getDOMNode.map(_.asMounted().asElement).map(jQuery(_).modal("hide")).void
 
       // jQuery event handler to be fired when the modal has been hidden
       def hidden(e: JQueryEventObject): js.Any = {
@@ -94,9 +108,9 @@ object Bootstrap {
       .componentDidMount(scope => Callback {
         val p = scope.props
         // instruct Bootstrap to show the modal
-        jQuery(scope.getDOMNode).modal(js.Dynamic.literal("backdrop" -> p.backdrop, "keyboard" -> p.keyboard, "show" -> true))
+        jQuery(scope.getDOMNode.asElement).modal(js.Dynamic.literal("backdrop" -> p.backdrop, "keyboard" -> p.keyboard, "show" -> true))
         // register event listener to be notified when the modal is closed
-        jQuery(scope.getDOMNode).on("hidden.bs.modal", null, null, scope.backend.hidden _)
+        jQuery(scope.getDOMNode.asElement).on("hidden.bs.modal", null, null, scope.backend.hidden _)
       })
       .build
 

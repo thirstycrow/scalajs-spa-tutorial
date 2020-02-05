@@ -39,7 +39,7 @@ object LoggerFactory {
    * Create a logger that outputs to browser console
    */
   def getLogger(name: String): Logger = {
-    val nativeLogger = Log4JavaScript.log4javascript.getLogger(name)
+    val nativeLogger = Log4JavaScript.getLogger(name)
     nativeLogger.addAppender(consoleAppender)
     new L4JSLogger(nativeLogger)
   }
@@ -48,7 +48,7 @@ object LoggerFactory {
    * Create a logger that outputs to a separate popup window
    */
   def getPopUpLogger(name: String): Logger = {
-    val nativeLogger = Log4JavaScript.log4javascript.getLogger(name)
+    val nativeLogger = Log4JavaScript.getLogger(name)
     nativeLogger.addAppender(popupAppender)
     new L4JSLogger(nativeLogger)
   }
